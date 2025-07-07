@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:models="clr-namespace:TaskManager.Core.Models;assembly=TaskManager.Core"
         mc:Ignorable="d"
         Title="Task Manager - MVVM with IoC" 
         Height="800" Width="1200"
@@ -156,7 +157,7 @@
                                                     Width="120">
                                 <DataGridComboBoxColumn.ElementStyle>
                                     <Style TargetType="ComboBox" BasedOn="{StaticResource MaterialDesignDataGridComboBox}">
-                                        <Setter Property="ItemsSource" Value="{Binding Source={x:Static TaskManager.Core.Models:TaskStatus.NotStarted}, Converter={StaticResource EnumToCollectionConverter}}"/>
+                                        <Setter Property="ItemsSource" Value="{Binding Source={x:Static models:TaskStatus.NotStarted}, Converter={StaticResource EnumToCollectionConverter}}"/>
                                     </Style>
                                 </DataGridComboBoxColumn.ElementStyle>
                             </DataGridComboBoxColumn>
@@ -166,7 +167,7 @@
                                                     Width="100">
                                 <DataGridComboBoxColumn.ElementStyle>
                                     <Style TargetType="ComboBox" BasedOn="{StaticResource MaterialDesignDataGridComboBox}">
-                                        <Setter Property="ItemsSource" Value="{Binding Source={x:Static TaskManager.Core.Models:TaskPriority.Low}, Converter={StaticResource EnumToCollectionConverter}}"/>
+                                        <Setter Property="ItemsSource" Value="{Binding Source={x:Static models:TaskPriority.Low}, Converter={StaticResource EnumToCollectionConverter}}"/>
                                     </Style>
                                 </DataGridComboBoxColumn.ElementStyle>
                             </DataGridComboBoxColumn>

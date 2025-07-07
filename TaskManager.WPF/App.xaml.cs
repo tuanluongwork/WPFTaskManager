@@ -24,6 +24,13 @@ public partial class App : Application
 
     public App()
     {
+        // Configure Serilog
+        Log.Logger = new LoggerConfiguration()
+            .MinimumLevel.Information()
+            .WriteTo.Console()
+            .WriteTo.File("logs/taskmanager-.txt", rollingInterval: RollingInterval.Day)
+            .CreateLogger();
+
         _host = Host.CreateDefaultBuilder()
             .ConfigureAppConfiguration((context, config) =>
             {
@@ -34,10 +41,7 @@ public partial class App : Application
             {
                 ConfigureServices(context.Configuration, services);
             })
-            .UseSerilog((context, config) =>
-            {
-                config.ReadFrom.Configuration(context.Configuration);
-            })
+            .UseSerilog()
             .Build();
     }
 
@@ -85,6 +89,7 @@ public partial class App : Application
             await _host.StopAsync();
         }
 
+        Log.CloseAndFlush();
         base.OnExit(e);
     }
 }

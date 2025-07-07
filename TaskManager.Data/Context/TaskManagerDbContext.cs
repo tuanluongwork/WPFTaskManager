@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using TaskManager.Core.Models;
+using System;
 
 namespace TaskManager.Data.Context
 {
@@ -55,7 +56,7 @@ namespace TaskManager.Data.Context
                     Title = "Setup Development Environment",
                     Description = "Install Visual Studio, .NET SDK, and configure Git",
                     Priority = TaskPriority.High,
-                    Status = TaskStatus.Completed,
+                    Status = TaskManager.Core.Models.TaskStatus.Completed,
                     CreatedDate = DateTime.Now.AddDays(-7),
                     CompletedDate = DateTime.Now.AddDays(-5),
                     AssignedTo = "John Doe",
@@ -70,7 +71,7 @@ namespace TaskManager.Data.Context
                     Title = "Implement User Authentication",
                     Description = "Add login and registration functionality with JWT tokens",
                     Priority = TaskPriority.Critical,
-                    Status = TaskStatus.InProgress,
+                    Status = TaskManager.Core.Models.TaskStatus.InProgress,
                     CreatedDate = DateTime.Now.AddDays(-3),
                     DueDate = DateTime.Now.AddDays(2),
                     AssignedTo = "Jane Smith",
@@ -85,7 +86,7 @@ namespace TaskManager.Data.Context
                     Title = "Design Database Schema",
                     Description = "Create ER diagram and define table structures",
                     Priority = TaskPriority.High,
-                    Status = TaskStatus.NotStarted,
+                    Status = TaskManager.Core.Models.TaskStatus.NotStarted,
                     CreatedDate = DateTime.Now.AddDays(-1),
                     DueDate = DateTime.Now.AddDays(5),
                     AssignedTo = "Bob Johnson",

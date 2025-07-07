@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using TaskManager.Core.Interfaces;
 using TaskManager.Core.Models;
+using CoreModels = TaskManager.Core.Models;
 
 namespace TaskManager.Services
 {
@@ -61,7 +62,7 @@ namespace TaskManager.Services
             return await _taskRepository.DeleteTaskAsync(id);
         }
 
-        public async Task<IEnumerable<TaskItem>> GetTasksByStatusAsync(TaskStatus status)
+        public async Task<IEnumerable<TaskItem>> GetTasksByStatusAsync(CoreModels.TaskStatus status)
         {
             return await _taskRepository.GetTasksByStatusAsync(status);
         }
@@ -89,11 +90,11 @@ namespace TaskManager.Services
             return await _taskRepository.SearchTasksAsync(searchTerm);
         }
 
-        public async Task<Dictionary<TaskStatus, int>> GetTaskStatisticsAsync()
+        public async Task<Dictionary<CoreModels.TaskStatus, int>> GetTaskStatisticsAsync()
         {
             var allTasks = await _taskRepository.GetAllTasksAsync();
             
-            return Enum.GetValues<TaskStatus>()
+            return Enum.GetValues<CoreModels.TaskStatus>()
                 .ToDictionary(
                     status => status,
                     status => allTasks.Count(t => t.Status == status)
@@ -128,16 +129,16 @@ namespace TaskManager.Services
             // Calculate completion percentage based on status
             switch (task.Status)
             {
-                case TaskStatus.NotStarted:
+                case CoreModels.TaskStatus.NotStarted:
                     task.CompletionPercentage = 0;
                     break;
-                case TaskStatus.Completed:
+                case CoreModels.TaskStatus.Completed:
                     task.CompletionPercentage = 100;
                     break;
-                case TaskStatus.Cancelled:
+                case CoreModels.TaskStatus.Cancelled:
                     // Keep existing percentage
                     break;
-                case TaskStatus.InProgress:
+                case CoreModels.TaskStatus.InProgress:
                     // Calculate based on actual vs estimated hours if available
                     if (task.EstimatedHours > 0 && task.ActualHours > 0)
                     {

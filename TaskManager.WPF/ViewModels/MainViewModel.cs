@@ -7,6 +7,7 @@ using Serilog;
 using TaskManager.Core.Interfaces;
 using TaskManager.Core.Models;
 using TaskManager.WPF.Commands;
+using CoreModels = TaskManager.Core.Models;
 
 namespace TaskManager.WPF.ViewModels
 {
@@ -76,9 +77,9 @@ namespace TaskManager.WPF.ViewModels
 
         // Statistics properties
         public int TotalTasks => Tasks.Count;
-        public int CompletedTasks => Tasks.Count(t => t.Status == TaskStatus.Completed);
+        public int CompletedTasks => Tasks.Count(t => t.Status == CoreModels.TaskStatus.Completed);
         public int OverdueTasks => Tasks.Count(t => t.IsOverdue);
-        public int InProgressTasks => Tasks.Count(t => t.Status == TaskStatus.InProgress);
+        public int InProgressTasks => Tasks.Count(t => t.Status == CoreModels.TaskStatus.InProgress);
 
         private async Task LoadTasksAsync()
         {
@@ -120,7 +121,7 @@ namespace TaskManager.WPF.ViewModels
                     Title = "New Task",
                     Description = "Task description",
                     Priority = TaskPriority.Medium,
-                    Status = TaskStatus.NotStarted,
+                    Status = CoreModels.TaskStatus.NotStarted,
                     AssignedTo = "Unassigned",
                     Category = "General",
                     EstimatedHours = 8

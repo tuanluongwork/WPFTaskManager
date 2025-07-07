@@ -12,12 +12,12 @@ namespace TaskManager.Core.Interfaces
         Task<TaskItem> CreateTaskAsync(TaskItem task);
         Task<TaskItem> UpdateTaskAsync(TaskItem task);
         Task<bool> DeleteTaskAsync(int id);
-        Task<IEnumerable<TaskItem>> GetTasksByStatusAsync(TaskStatus status);
+        Task<IEnumerable<TaskItem>> GetTasksByStatusAsync(Models.TaskStatus status);
         Task<IEnumerable<TaskItem>> GetTasksByPriorityAsync(TaskPriority priority);
         Task<IEnumerable<TaskItem>> GetTasksByAssigneeAsync(string assignee);
         Task<IEnumerable<TaskItem>> GetOverdueTasksAsync();
         Task<IEnumerable<TaskItem>> SearchTasksAsync(string searchTerm);
-        Task<Dictionary<TaskStatus, int>> GetTaskStatisticsAsync();
+        Task<Dictionary<Models.TaskStatus, int>> GetTaskStatisticsAsync();
         Task<bool> ValidateTaskAsync(TaskItem task);
         Task<TaskItem> CalculateTaskMetricsAsync(TaskItem task);
     }

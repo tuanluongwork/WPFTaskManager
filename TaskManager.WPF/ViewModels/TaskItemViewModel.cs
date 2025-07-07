@@ -1,5 +1,6 @@
 using System;
 using TaskManager.Core.Models;
+using CoreModels = TaskManager.Core.Models;
 
 namespace TaskManager.WPF.ViewModels
 {
@@ -56,7 +57,7 @@ namespace TaskManager.WPF.ViewModels
             }
         }
 
-        public TaskStatus Status
+        public CoreModels.TaskStatus Status
         {
             get => _taskItem.Status;
             set
@@ -155,12 +156,12 @@ namespace TaskManager.WPF.ViewModels
         }
 
         // UI-specific properties
-        public bool IsCompleted => Status == TaskStatus.Completed;
+        public bool IsCompleted => Status == CoreModels.TaskStatus.Completed;
 
         public bool IsOverdue => DueDate.HasValue && 
                                  DueDate.Value < DateTime.Now && 
-                                 Status != TaskStatus.Completed && 
-                                 Status != TaskStatus.Cancelled;
+                                 Status != CoreModels.TaskStatus.Completed && 
+                                 Status != CoreModels.TaskStatus.Cancelled;
 
         public string PriorityColor => Priority switch
         {
@@ -173,11 +174,11 @@ namespace TaskManager.WPF.ViewModels
 
         public string StatusColor => Status switch
         {
-            TaskStatus.Completed => "#388E3C",
-            TaskStatus.InProgress => "#1976D2",
-            TaskStatus.NotStarted => "#757575",
-            TaskStatus.OnHold => "#F57C00",
-            TaskStatus.Cancelled => "#D32F2F",
+            CoreModels.TaskStatus.Completed => "#388E3C",
+            CoreModels.TaskStatus.InProgress => "#1976D2",
+            CoreModels.TaskStatus.NotStarted => "#757575",
+            CoreModels.TaskStatus.OnHold => "#F57C00",
+            CoreModels.TaskStatus.Cancelled => "#D32F2F",
             _ => "#757575"
         };
     }

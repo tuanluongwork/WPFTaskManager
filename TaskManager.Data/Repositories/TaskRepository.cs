@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using TaskManager.Core.Interfaces;
 using TaskManager.Core.Models;
 using TaskManager.Data.Context;
+using CoreModels = TaskManager.Core.Models;
 
 namespace TaskManager.Data.Repositories
 {
@@ -52,7 +53,7 @@ namespace TaskManager.Data.Repositories
             // Don't update CreatedDate
             _context.Entry(task).Property(x => x.CreatedDate).IsModified = false;
             
-            if (task.Status == TaskStatus.Completed && !task.CompletedDate.HasValue)
+            if (task.Status == CoreModels.TaskStatus.Completed && !task.CompletedDate.HasValue)
             {
                 task.CompletedDate = DateTime.Now;
             }
@@ -72,7 +73,7 @@ namespace TaskManager.Data.Repositories
             return true;
         }
 
-        public async Task<IEnumerable<TaskItem>> GetTasksByStatusAsync(TaskStatus status)
+        public async Task<IEnumerable<TaskItem>> GetTasksByStatusAsync(CoreModels.TaskStatus status)
         {
             return await _context.Tasks
                 .Where(t => t.Status == status)
@@ -102,8 +103,8 @@ namespace TaskManager.Data.Repositories
             return await _context.Tasks
                 .Where(t => t.DueDate.HasValue && 
                            t.DueDate.Value < now && 
-                           t.Status != TaskStatus.Completed &&
-                           t.Status != TaskStatus.Cancelled)
+                           t.Status != CoreModels.TaskStatus.Completed &&
+                           t.Status != CoreModels.TaskStatus.Cancelled)
                 .OrderByDescending(t => t.Priority)
                 .ToListAsync();
         }

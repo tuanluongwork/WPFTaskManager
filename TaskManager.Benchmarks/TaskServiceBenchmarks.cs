@@ -3,6 +3,7 @@ using BenchmarkDotNet.Jobs;
 using TaskManager.Core.Interfaces;
 using TaskManager.Core.Models;
 using TaskManager.Services;
+using CoreModels = TaskManager.Core.Models;
 
 namespace TaskManager.Benchmarks
 {
@@ -54,7 +55,7 @@ namespace TaskManager.Benchmarks
                 Title = "Benchmark Task",
                 Description = "This is a benchmark task",
                 Priority = TaskPriority.Medium,
-                Status = TaskStatus.NotStarted,
+                Status = CoreModels.TaskStatus.NotStarted,
                 EstimatedHours = 8
             };
 
@@ -82,7 +83,7 @@ namespace TaskManager.Benchmarks
         {
             var task = new TaskItem
             {
-                Status = TaskStatus.InProgress,
+                Status = CoreModels.TaskStatus.InProgress,
                 EstimatedHours = 10,
                 ActualHours = 5
             };
@@ -94,7 +95,7 @@ namespace TaskManager.Benchmarks
         {
             var tasks = new List<TaskItem>();
             var random = new Random();
-            var statuses = Enum.GetValues<TaskStatus>();
+            var statuses = Enum.GetValues<CoreModels.TaskStatus>();
             var priorities = Enum.GetValues<TaskPriority>();
 
             for (int i = 0; i < count; i++)
@@ -159,7 +160,7 @@ namespace TaskManager.Benchmarks
             return Task.FromResult(removed);
         }
 
-        public Task<IEnumerable<TaskItem>> GetTasksByStatusAsync(TaskStatus status)
+        public Task<IEnumerable<TaskItem>> GetTasksByStatusAsync(CoreModels.TaskStatus status)
         {
             return Task.FromResult<IEnumerable<TaskItem>>(
                 _tasks.Where(t => t.Status == status).ToList());
@@ -183,8 +184,8 @@ namespace TaskManager.Benchmarks
             return Task.FromResult<IEnumerable<TaskItem>>(
                 _tasks.Where(t => t.DueDate.HasValue && 
                                  t.DueDate.Value < now && 
-                                 t.Status != TaskStatus.Completed &&
-                                 t.Status != TaskStatus.Cancelled).ToList());
+                                 t.Status != CoreModels.TaskStatus.Completed &&
+                                 t.Status != CoreModels.TaskStatus.Cancelled).ToList());
         }
 
         public Task<IEnumerable<TaskItem>> SearchTasksAsync(string searchTerm)

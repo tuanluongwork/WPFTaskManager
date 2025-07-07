@@ -4,6 +4,7 @@ using TaskManager.Core.Interfaces;
 using TaskManager.Core.Models;
 using TaskManager.Services;
 using Xunit;
+using CoreModels = TaskManager.Core.Models;
 
 namespace TaskManager.Tests.Services
 {
@@ -63,7 +64,7 @@ namespace TaskManager.Tests.Services
                 Title = "New Task",
                 Description = "Description",
                 Priority = TaskPriority.High,
-                Status = TaskStatus.NotStarted,
+                Status = CoreModels.TaskStatus.NotStarted,
                 EstimatedHours = 8
             };
 
@@ -156,7 +157,7 @@ namespace TaskManager.Tests.Services
             // Arrange
             var task = new TaskItem
             {
-                Status = TaskStatus.Completed,
+                Status = CoreModels.TaskStatus.Completed,
                 CompletionPercentage = 50 // Should be overridden
             };
 
@@ -173,7 +174,7 @@ namespace TaskManager.Tests.Services
             // Arrange
             var task = new TaskItem
             {
-                Status = TaskStatus.NotStarted,
+                Status = CoreModels.TaskStatus.NotStarted,
                 CompletionPercentage = 50 // Should be overridden
             };
 
@@ -190,12 +191,12 @@ namespace TaskManager.Tests.Services
             // Arrange
             var tasks = new List<TaskItem>
             {
-                new TaskItem { Status = TaskStatus.NotStarted },
-                new TaskItem { Status = TaskStatus.InProgress },
-                new TaskItem { Status = TaskStatus.InProgress },
-                new TaskItem { Status = TaskStatus.Completed },
-                new TaskItem { Status = TaskStatus.Completed },
-                new TaskItem { Status = TaskStatus.Completed }
+                new TaskItem { Status = CoreModels.TaskStatus.NotStarted },
+                new TaskItem { Status = CoreModels.TaskStatus.InProgress },
+                new TaskItem { Status = CoreModels.TaskStatus.InProgress },
+                new TaskItem { Status = CoreModels.TaskStatus.Completed },
+                new TaskItem { Status = CoreModels.TaskStatus.Completed },
+                new TaskItem { Status = CoreModels.TaskStatus.Completed }
             };
 
             _mockRepository.Setup(r => r.GetAllTasksAsync())
@@ -205,11 +206,11 @@ namespace TaskManager.Tests.Services
             var statistics = await _taskService.GetTaskStatisticsAsync();
 
             // Assert
-            statistics[TaskStatus.NotStarted].Should().Be(1);
-            statistics[TaskStatus.InProgress].Should().Be(2);
-            statistics[TaskStatus.Completed].Should().Be(3);
-            statistics[TaskStatus.Cancelled].Should().Be(0);
-            statistics[TaskStatus.OnHold].Should().Be(0);
+            statistics[CoreModels.TaskStatus.NotStarted].Should().Be(1);
+            statistics[CoreModels.TaskStatus.InProgress].Should().Be(2);
+            statistics[CoreModels.TaskStatus.Completed].Should().Be(3);
+            statistics[CoreModels.TaskStatus.Cancelled].Should().Be(0);
+            statistics[CoreModels.TaskStatus.OnHold].Should().Be(0);
         }
 
         [Fact]

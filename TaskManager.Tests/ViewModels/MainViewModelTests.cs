@@ -5,6 +5,7 @@ using TaskManager.Core.Interfaces;
 using TaskManager.Core.Models;
 using TaskManager.WPF.ViewModels;
 using Xunit;
+using CoreModels = TaskManager.Core.Models;
 
 namespace TaskManager.Tests.ViewModels
 {
@@ -47,15 +48,16 @@ namespace TaskManager.Tests.ViewModels
             // Arrange
             var tasks = new List<TaskItem>
             {
-                new TaskItem { Id = 1, Title = "Task 1", Status = TaskStatus.NotStarted },
-                new TaskItem { Id = 2, Title = "Task 2", Status = TaskStatus.Completed }
+                new TaskItem { Id = 1, Title = "Task 1", Status = CoreModels.TaskStatus.NotStarted },
+                new TaskItem { Id = 2, Title = "Task 2", Status = CoreModels.TaskStatus.Completed }
             };
 
             _mockTaskService.Setup(s => s.GetAllTasksAsync())
                 .ReturnsAsync(tasks);
 
             // Act
-            await _viewModel.LoadTasksCommand.Execute(null);
+            _viewModel.LoadTasksCommand.Execute(null);
+            await Task.Delay(100); // Give async command time to complete
 
             // Assert
             _viewModel.Tasks.Should().HaveCount(2);
@@ -79,9 +81,9 @@ namespace TaskManager.Tests.ViewModels
         public void CompletedTasks_ShouldReturnCorrectCount()
         {
             // Arrange
-            _viewModel.Tasks.Add(new TaskItemViewModel(new TaskItem { Status = TaskStatus.Completed }));
-            _viewModel.Tasks.Add(new TaskItemViewModel(new TaskItem { Status = TaskStatus.InProgress }));
-            _viewModel.Tasks.Add(new TaskItemViewModel(new TaskItem { Status = TaskStatus.Completed }));
+            _viewModel.Tasks.Add(new TaskItemViewModel(new TaskItem { Status = CoreModels.TaskStatus.Completed }));
+            _viewModel.Tasks.Add(new TaskItemViewModel(new TaskItem { Status = CoreModels.TaskStatus.InProgress }));
+            _viewModel.Tasks.Add(new TaskItemViewModel(new TaskItem { Status = CoreModels.TaskStatus.Completed }));
 
             // Act & Assert
             _viewModel.CompletedTasks.Should().Be(2);
@@ -94,12 +96,12 @@ namespace TaskManager.Tests.ViewModels
             var overdueTask = new TaskItem
             {
                 DueDate = DateTime.Now.AddDays(-1),
-                Status = TaskStatus.InProgress
+                Status = CoreModels.TaskStatus.InProgress
             };
             var notOverdueTask = new TaskItem
             {
                 DueDate = DateTime.Now.AddDays(1),
-                Status = TaskStatus.InProgress
+                Status = CoreModels.TaskStatus.InProgress
             };
 
             _viewModel.Tasks.Add(new TaskItemViewModel(overdueTask));
@@ -117,14 +119,15 @@ namespace TaskManager.Tests.ViewModels
             {
                 Id = 1,
                 Title = "New Task",
-                Status = TaskStatus.NotStarted
+                Status = CoreModels.TaskStatus.NotStarted
             };
 
             _mockTaskService.Setup(s => s.CreateTaskAsync(It.IsAny<TaskItem>()))
                 .ReturnsAsync(newTask);
 
             // Act
-            await _viewModel.AddTaskCommand.Execute(null);
+            _viewModel.AddTaskCommand.Execute(null);
+            await Task.Delay(100); // Give async command time to complete
 
             // Assert
             _viewModel.Tasks.Should().HaveCount(1);
@@ -145,7 +148,8 @@ namespace TaskManager.Tests.ViewModels
                 .ReturnsAsync(true);
 
             // Act
-            await _viewModel.DeleteTaskCommand.Execute(taskViewModel);
+            _viewModel.DeleteTaskCommand.Execute(taskViewModel);
+            await Task.Delay(100); // Give async command time to complete
 
             // Assert
             _viewModel.Tasks.Should().BeEmpty();
@@ -166,7 +170,8 @@ namespace TaskManager.Tests.ViewModels
                 .ReturnsAsync(searchResults);
 
             // Act
-            await _viewModel.SearchCommand.Execute(null);
+            _viewModel.SearchCommand.Execute(null);
+            await Task.Delay(100); // Give async command time to complete
 
             // Assert
             _viewModel.Tasks.Should().HaveCount(1);
