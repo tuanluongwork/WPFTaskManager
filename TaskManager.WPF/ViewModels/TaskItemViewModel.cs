@@ -7,6 +7,10 @@ namespace TaskManager.WPF.ViewModels
     public class TaskItemViewModel : ViewModelBase
     {
         private readonly TaskItem _taskItem;
+        private bool _isDirty;
+
+        public event EventHandler? TaskModified;
+        public event EventHandler? StatisticsChanged;
 
         public TaskItemViewModel(TaskItem taskItem)
         {
@@ -17,6 +21,22 @@ namespace TaskManager.WPF.ViewModels
 
         public int Id => _taskItem.Id;
 
+        public bool IsDirty
+        {
+            get => _isDirty;
+            private set
+            {
+                if (_isDirty != value)
+                {
+                    _isDirty = value;
+                    if (_isDirty)
+                    {
+                        TaskModified?.Invoke(this, EventArgs.Empty);
+                    }
+                }
+            }
+        }
+
         public string Title
         {
             get => _taskItem.Title;
@@ -26,6 +46,7 @@ namespace TaskManager.WPF.ViewModels
                 {
                     _taskItem.Title = value;
                     OnPropertyChanged();
+                    IsDirty = true;
                 }
             }
         }
@@ -39,6 +60,7 @@ namespace TaskManager.WPF.ViewModels
                 {
                     _taskItem.Description = value;
                     OnPropertyChanged();
+                    IsDirty = true;
                 }
             }
         }
@@ -53,6 +75,7 @@ namespace TaskManager.WPF.ViewModels
                     _taskItem.Priority = value;
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(PriorityColor));
+                    IsDirty = true;
                 }
             }
         }
@@ -64,10 +87,37 @@ namespace TaskManager.WPF.ViewModels
             {
                 if (_taskItem.Status != value)
                 {
+                    var previousStatus = _taskItem.Status;
                     _taskItem.Status = value;
+                    
+                    // Auto-calculate completion percentage based on status
+                    switch (value)
+                    {
+                        case CoreModels.TaskStatus.NotStarted:
+                            _taskItem.CompletionPercentage = 0;
+                            break;
+                        case CoreModels.TaskStatus.Completed:
+                            _taskItem.CompletionPercentage = 100;
+                            _taskItem.CompletedDate = DateTime.Now;
+                            break;
+                        case CoreModels.TaskStatus.InProgress:
+                            if (_taskItem.CompletionPercentage == 0 || _taskItem.CompletionPercentage == 100)
+                            {
+                                _taskItem.CompletionPercentage = 50; // Default to 50% for in progress
+                            }
+                            break;
+                    }
+                    
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(StatusColor));
                     OnPropertyChanged(nameof(IsCompleted));
+                    OnPropertyChanged(nameof(IsOverdue));
+                    OnPropertyChanged(nameof(CompletionPercentage));
+                    
+                    // Notify statistics change immediately
+                    StatisticsChanged?.Invoke(this, EventArgs.Empty);
+                    
+                    IsDirty = true;
                 }
             }
         }
@@ -84,6 +134,11 @@ namespace TaskManager.WPF.ViewModels
                     _taskItem.DueDate = value;
                     OnPropertyChanged();
                     OnPropertyChanged(nameof(IsOverdue));
+                    
+                    // If overdue status might have changed, notify statistics
+                    StatisticsChanged?.Invoke(this, EventArgs.Empty);
+                    
+                    IsDirty = true;
                 }
             }
         }
@@ -99,6 +154,7 @@ namespace TaskManager.WPF.ViewModels
                 {
                     _taskItem.AssignedTo = value;
                     OnPropertyChanged();
+                    IsDirty = true;
                 }
             }
         }
@@ -151,8 +207,14 @@ namespace TaskManager.WPF.ViewModels
                 {
                     _taskItem.CompletionPercentage = value;
                     OnPropertyChanged();
+                    IsDirty = true;
                 }
             }
+        }
+
+        public void ResetDirtyFlag()
+        {
+            _isDirty = false;
         }
 
         // UI-specific properties

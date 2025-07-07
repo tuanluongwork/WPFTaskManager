@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Serilog;
@@ -19,6 +21,7 @@ namespace TaskManager.WPF.ViewModels
         private string _searchText = string.Empty;
         private bool _isLoading;
         private string _statusMessage = string.Empty;
+        private readonly Dictionary<int, CancellationTokenSource> _saveDebounceTimers = new();
 
         public MainViewModel(ITaskService taskService, ILogger logger)
         {
@@ -30,8 +33,6 @@ namespace TaskManager.WPF.ViewModels
             // Initialize commands
             LoadTasksCommand = new AsyncRelayCommand(async _ => await LoadTasksAsync());
             AddTaskCommand = new AsyncRelayCommand(async _ => await AddTaskAsync());
-            EditTaskCommand = new AsyncRelayCommand<TaskItemViewModel>(async task => await EditTaskAsync(task), 
-                task => task != null);
             DeleteTaskCommand = new AsyncRelayCommand<TaskItemViewModel>(async task => await DeleteTaskAsync(task), 
                 task => task != null);
             SearchCommand = new AsyncRelayCommand(async _ => await SearchTasksAsync());
@@ -70,7 +71,6 @@ namespace TaskManager.WPF.ViewModels
         // Commands
         public ICommand LoadTasksCommand { get; }
         public ICommand AddTaskCommand { get; }
-        public ICommand EditTaskCommand { get; }
         public ICommand DeleteTaskCommand { get; }
         public ICommand SearchCommand { get; }
         public ICommand RefreshCommand { get; }
@@ -91,10 +91,28 @@ namespace TaskManager.WPF.ViewModels
 
                 var tasks = await _taskService.GetAllTasksAsync();
                 
+                // Clean up existing tasks
+                foreach (var existingTask in Tasks)
+                {
+                    existingTask.TaskModified -= OnTaskModified;
+                    existingTask.StatisticsChanged -= OnStatisticsChanged;
+                }
+                
+                // Cancel all pending saves
+                foreach (var kvp in _saveDebounceTimers)
+                {
+                    kvp.Value.Cancel();
+                    kvp.Value.Dispose();
+                }
+                _saveDebounceTimers.Clear();
+                
                 Tasks.Clear();
                 foreach (var task in tasks)
                 {
-                    Tasks.Add(new TaskItemViewModel(task));
+                    var taskViewModel = new TaskItemViewModel(task);
+                    taskViewModel.TaskModified += OnTaskModified;
+                    taskViewModel.StatisticsChanged += OnStatisticsChanged;
+                    Tasks.Add(taskViewModel);
                 }
 
                 UpdateStatistics();
@@ -112,6 +130,64 @@ namespace TaskManager.WPF.ViewModels
             }
         }
 
+        private void OnStatisticsChanged(object? sender, EventArgs e)
+        {
+            // Update statistics immediately when relevant properties change
+            UpdateStatistics();
+        }
+
+        private async void OnTaskModified(object? sender, EventArgs e)
+        {
+            if (sender is TaskItemViewModel taskViewModel)
+            {
+                // Cancel any existing save operation for this task
+                if (_saveDebounceTimers.TryGetValue(taskViewModel.Id, out var existingCts))
+                {
+                    existingCts.Cancel();
+                    existingCts.Dispose();
+                }
+
+                // Create a new cancellation token for this save operation
+                var cts = new CancellationTokenSource();
+                _saveDebounceTimers[taskViewModel.Id] = cts;
+
+                try
+                {
+                    // Wait 1 second before saving (debounce)
+                    await Task.Delay(1000, cts.Token);
+                    
+                    // If we get here without being cancelled, perform the save
+                    await AutoSaveTaskAsync(taskViewModel);
+                    
+                    // Remove the timer after successful save
+                    _saveDebounceTimers.Remove(taskViewModel.Id);
+                }
+                catch (TaskCanceledException)
+                {
+                    // This is expected when a new change comes in before the delay expires
+                }
+            }
+        }
+
+        private async Task AutoSaveTaskAsync(TaskItemViewModel taskViewModel)
+        {
+            try
+            {
+                // Recalculate task metrics before saving
+                var updatedTask = await _taskService.CalculateTaskMetricsAsync(taskViewModel.Model);
+                await _taskService.UpdateTaskAsync(updatedTask);
+                
+                taskViewModel.ResetDirtyFlag();
+                StatusMessage = $"Auto-saved: {taskViewModel.Title}";
+                _logger.Information("Auto-saved task: {TaskId}", taskViewModel.Id);
+            }
+            catch (Exception ex)
+            {
+                _logger.Error(ex, "Error auto-saving task");
+                StatusMessage = $"Auto-save failed: {ex.Message}";
+            }
+        }
+
         private async Task AddTaskAsync()
         {
             try
@@ -124,11 +200,14 @@ namespace TaskManager.WPF.ViewModels
                     Status = CoreModels.TaskStatus.NotStarted,
                     AssignedTo = "Unassigned",
                     Category = "General",
-                    EstimatedHours = 8
+                    EstimatedHours = 8,
+                    CreatedDate = DateTime.Now
                 };
 
                 var createdTask = await _taskService.CreateTaskAsync(newTask);
                 var taskViewModel = new TaskItemViewModel(createdTask);
+                taskViewModel.TaskModified += OnTaskModified;
+                taskViewModel.StatisticsChanged += OnStatisticsChanged;
                 Tasks.Insert(0, taskViewModel);
                 SelectedTask = taskViewModel;
 
@@ -143,24 +222,6 @@ namespace TaskManager.WPF.ViewModels
             }
         }
 
-        private async Task EditTaskAsync(TaskItemViewModel? taskViewModel)
-        {
-            if (taskViewModel == null) return;
-
-            try
-            {
-                await _taskService.UpdateTaskAsync(taskViewModel.Model);
-                UpdateStatistics();
-                StatusMessage = "Task updated successfully";
-                _logger.Information("Updated task: {TaskId}", taskViewModel.Id);
-            }
-            catch (Exception ex)
-            {
-                _logger.Error(ex, "Error updating task");
-                StatusMessage = $"Error: {ex.Message}";
-            }
-        }
-
         private async Task DeleteTaskAsync(TaskItemViewModel? taskViewModel)
         {
             if (taskViewModel == null) return;
@@ -170,6 +231,18 @@ namespace TaskManager.WPF.ViewModels
                 var result = await _taskService.DeleteTaskAsync(taskViewModel.Id);
                 if (result)
                 {
+                    // Unsubscribe from events to avoid memory leaks
+                    taskViewModel.TaskModified -= OnTaskModified;
+                    taskViewModel.StatisticsChanged -= OnStatisticsChanged;
+                    
+                    // Cancel any pending save operations
+                    if (_saveDebounceTimers.TryGetValue(taskViewModel.Id, out var cts))
+                    {
+                        cts.Cancel();
+                        cts.Dispose();
+                        _saveDebounceTimers.Remove(taskViewModel.Id);
+                    }
+                    
                     Tasks.Remove(taskViewModel);
                     UpdateStatistics();
                     StatusMessage = "Task deleted successfully";
@@ -194,10 +267,28 @@ namespace TaskManager.WPF.ViewModels
                     ? await _taskService.GetAllTasksAsync()
                     : await _taskService.SearchTasksAsync(SearchText);
 
+                // Clean up existing tasks
+                foreach (var existingTask in Tasks)
+                {
+                    existingTask.TaskModified -= OnTaskModified;
+                    existingTask.StatisticsChanged -= OnStatisticsChanged;
+                }
+                
+                // Cancel all pending saves
+                foreach (var kvp in _saveDebounceTimers)
+                {
+                    kvp.Value.Cancel();
+                    kvp.Value.Dispose();
+                }
+                _saveDebounceTimers.Clear();
+
                 Tasks.Clear();
                 foreach (var task in tasks)
                 {
-                    Tasks.Add(new TaskItemViewModel(task));
+                    var taskViewModel = new TaskItemViewModel(task);
+                    taskViewModel.TaskModified += OnTaskModified;
+                    taskViewModel.StatisticsChanged += OnStatisticsChanged;
+                    Tasks.Add(taskViewModel);
                 }
 
                 UpdateStatistics();

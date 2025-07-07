@@ -152,35 +152,37 @@
                                                 Width="2*"
                                                 EditingElementStyle="{StaticResource MaterialDesignDataGridTextColumnEditingStyle}"/>
                             
-                            <DataGridComboBoxColumn Header="Status" 
-                                                    SelectedItemBinding="{Binding Status}"
-                                                    Width="120">
-                                <DataGridComboBoxColumn.ElementStyle>
-                                    <Style TargetType="ComboBox" BasedOn="{StaticResource MaterialDesignDataGridComboBox}">
-                                        <Setter Property="ItemsSource" Value="{Binding Source={x:Type models:TaskStatus}, Converter={StaticResource EnumToCollectionConverter}}"/>
-                                    </Style>
-                                </DataGridComboBoxColumn.ElementStyle>
-                                <DataGridComboBoxColumn.EditingElementStyle>
-                                    <Style TargetType="ComboBox" BasedOn="{StaticResource MaterialDesignDataGridComboBox}">
-                                        <Setter Property="ItemsSource" Value="{Binding Source={x:Type models:TaskStatus}, Converter={StaticResource EnumToCollectionConverter}}"/>
-                                    </Style>
-                                </DataGridComboBoxColumn.EditingElementStyle>
-                            </DataGridComboBoxColumn>
+                            <DataGridTemplateColumn Header="Status" Width="120">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Status}" VerticalAlignment="Center" Margin="8,0"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                                <DataGridTemplateColumn.CellEditingTemplate>
+                                    <DataTemplate>
+                                        <ComboBox SelectedItem="{Binding Status, UpdateSourceTrigger=PropertyChanged}"
+                                                  ItemsSource="{Binding Source={x:Type models:TaskStatus}, Converter={StaticResource EnumToCollectionConverter}}"
+                                                  Style="{StaticResource MaterialDesignComboBox}"
+                                                  IsDropDownOpen="True"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellEditingTemplate>
+                            </DataGridTemplateColumn>
 
-                            <DataGridComboBoxColumn Header="Priority" 
-                                                    SelectedItemBinding="{Binding Priority}"
-                                                    Width="100">
-                                <DataGridComboBoxColumn.ElementStyle>
-                                    <Style TargetType="ComboBox" BasedOn="{StaticResource MaterialDesignDataGridComboBox}">
-                                        <Setter Property="ItemsSource" Value="{Binding Source={x:Type models:TaskPriority}, Converter={StaticResource EnumToCollectionConverter}}"/>
-                                    </Style>
-                                </DataGridComboBoxColumn.ElementStyle>
-                                <DataGridComboBoxColumn.EditingElementStyle>
-                                    <Style TargetType="ComboBox" BasedOn="{StaticResource MaterialDesignDataGridComboBox}">
-                                        <Setter Property="ItemsSource" Value="{Binding Source={x:Type models:TaskPriority}, Converter={StaticResource EnumToCollectionConverter}}"/>
-                                    </Style>
-                                </DataGridComboBoxColumn.EditingElementStyle>
-                            </DataGridComboBoxColumn>
+                            <DataGridTemplateColumn Header="Priority" Width="100">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Priority}" VerticalAlignment="Center" Margin="8,0"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                                <DataGridTemplateColumn.CellEditingTemplate>
+                                    <DataTemplate>
+                                        <ComboBox SelectedItem="{Binding Priority, UpdateSourceTrigger=PropertyChanged}"
+                                                  ItemsSource="{Binding Source={x:Type models:TaskPriority}, Converter={StaticResource EnumToCollectionConverter}}"
+                                                  Style="{StaticResource MaterialDesignComboBox}"
+                                                  IsDropDownOpen="True"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellEditingTemplate>
+                            </DataGridTemplateColumn>
 
                             <DataGridTextColumn Header="Assigned To" 
                                                 Binding="{Binding AssignedTo}" 
@@ -231,20 +233,13 @@
                             <DataGridTemplateColumn Header="Actions" Width="100">
                                 <DataGridTemplateColumn.CellTemplate>
                                     <DataTemplate>
-                                        <StackPanel Orientation="Horizontal">
-                                            <Button Command="{Binding DataContext.EditTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                    CommandParameter="{Binding}"
-                                                    Style="{StaticResource MaterialDesignIconButton}"
-                                                    ToolTip="Edit">
-                                                <materialDesign:PackIcon Kind="Edit" Height="20" Width="20"/>
-                                            </Button>
-                                            <Button Command="{Binding DataContext.DeleteTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                                    CommandParameter="{Binding}"
-                                                    Style="{StaticResource MaterialDesignIconButton}"
-                                                    ToolTip="Delete">
-                                                <materialDesign:PackIcon Kind="Delete" Height="20" Width="20" Foreground="Red"/>
-                                            </Button>
-                                        </StackPanel>
+                                        <Button Command="{Binding DataContext.DeleteTaskCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                CommandParameter="{Binding}"
+                                                Style="{StaticResource MaterialDesignIconButton}"
+                                                ToolTip="Delete"
+                                                HorizontalAlignment="Center">
+                                            <materialDesign:PackIcon Kind="Delete" Height="20" Width="20" Foreground="Red"/>
+                                        </Button>
                                     </DataTemplate>
                                 </DataGridTemplateColumn.CellTemplate>
                             </DataGridTemplateColumn>
