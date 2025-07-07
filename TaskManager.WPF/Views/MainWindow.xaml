@@ -29,7 +29,7 @@
         <materialDesign:ColorZone Grid.Row="0" Mode="PrimaryMid" Padding="16">
             <DockPanel>
                 <StackPanel Orientation="Horizontal">
-                    <materialDesign:PackIcon Kind="TaskAlt" Height="32" Width="32" VerticalAlignment="Center"/>
+                    <materialDesign:PackIcon Kind="CheckCircle" Height="32" Width="32" VerticalAlignment="Center"/>
                     <TextBlock Text="Task Management System" 
                                VerticalAlignment="Center" 
                                Margin="16 0 0 0" 
@@ -100,7 +100,7 @@
                                Margin="0,0,0,16"/>
                     
                     <StackPanel Orientation="Horizontal" Margin="0,4">
-                        <materialDesign:PackIcon Kind="Task" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                        <materialDesign:PackIcon Kind="FormatListBulleted" VerticalAlignment="Center" Margin="0,0,8,0"/>
                         <TextBlock Text="Total Tasks: "/>
                         <TextBlock Text="{Binding TotalTasks}" FontWeight="Bold"/>
                     </StackPanel>
@@ -115,7 +115,7 @@
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" Margin="0,4">
-                        <materialDesign:PackIcon Kind="Progress" 
+                        <materialDesign:PackIcon Kind="ProgressClock" 
                                                  Foreground="Blue" 
                                                  VerticalAlignment="Center" 
                                                  Margin="0,0,8,0"/>

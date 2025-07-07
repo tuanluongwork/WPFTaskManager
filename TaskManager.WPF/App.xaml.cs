@@ -49,13 +49,16 @@ public partial class App : Application
     {
         // Add DbContext
         services.AddDbContext<TaskManagerDbContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+            options.UseSqlite(configuration.GetConnectionString("DefaultConnection")));
 
         // Add repositories
         services.AddScoped<ITaskRepository, TaskRepository>();
 
         // Add services
         services.AddScoped<ITaskService, TaskService>();
+        
+        // Add Serilog ILogger
+        services.AddSingleton<Serilog.ILogger>(Log.Logger);
 
         // Add ViewModels
         services.AddTransient<MainViewModel>();
@@ -66,20 +69,30 @@ public partial class App : Application
 
     protected override async void OnStartup(StartupEventArgs e)
     {
-        await _host.StartAsync();
-
-        // Ensure database is created and migrations are applied
-        using (var scope = _host.Services.CreateScope())
+        try
         {
-            var dbContext = scope.ServiceProvider.GetRequiredService<TaskManagerDbContext>();
-            await dbContext.Database.EnsureCreatedAsync();
+            // Initialize the application resources first
+            base.OnStartup(e);
+            
+            await _host.StartAsync();
+
+            // Ensure database is created and migrations are applied
+            using (var scope = _host.Services.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<TaskManagerDbContext>();
+                await dbContext.Database.EnsureCreatedAsync();
+            }
+
+            var mainWindow = _host.Services.GetRequiredService<MainWindow>();
+            mainWindow.DataContext = _host.Services.GetRequiredService<MainViewModel>();
+            mainWindow.Show();
         }
-
-        var mainWindow = _host.Services.GetRequiredService<MainWindow>();
-        mainWindow.DataContext = _host.Services.GetRequiredService<MainViewModel>();
-        mainWindow.Show();
-
-        base.OnStartup(e);
+        catch (Exception ex)
+        {
+            Log.Fatal(ex, "Application startup failed");
+            MessageBox.Show($"Application startup failed: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            Shutdown();
+        }
     }
 
     protected override async void OnExit(ExitEventArgs e)
