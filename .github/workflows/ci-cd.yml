@@ -1,0 +1,105 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 8.0.x
+        
+    - name: Restore dependencies
+      run: dotnet restore
+      
+    - name: Build
+      run: dotnet build --no-restore --configuration Release
+      
+    - name: Run tests
+      run: dotnet test --no-build --configuration Release --verbosity normal --collect:"XPlat Code Coverage" --results-directory ./coverage
+      
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        directory: ./coverage
+        fail_ci_if_error: true
+        
+    - name: Run benchmarks
+      run: dotnet run --project TaskManager.Benchmarks/TaskManager.Benchmarks.csproj --configuration Release
+      
+    - name: Publish application
+      run: dotnet publish TaskManager.WPF/TaskManager.WPF.csproj -c Release -o ./publish
+      
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: wpf-app
+        path: ./publish
+        
+  code-quality:
+    runs-on: windows-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 8.0.x
+        
+    - name: Install dotnet tools
+      run: |
+        dotnet tool install --global dotnet-format
+        dotnet tool install --global dotnet-reportgenerator-globaltool
+        
+    - name: Check code formatting
+      run: dotnet format --verify-no-changes
+      
+    - name: Run code analysis
+      run: dotnet build /p:EnableNETAnalyzers=true /p:AnalysisMode=AllEnabledByDefault /p:EnforceCodeStyleInBuild=true
+      
+  release:
+    needs: [build-and-test, code-quality]
+    runs-on: windows-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 8.0.x
+        
+    - name: Create Release Build
+      run: |
+        dotnet publish TaskManager.WPF/TaskManager.WPF.csproj -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o ./release
+        
+    - name: Create Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: v${{ github.run_number }}
+        release_name: Release v${{ github.run_number }}
+        draft: false
+        prerelease: false
+        
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./release/TaskManager.WPF.exe
+        asset_name: TaskManager.WPF.exe
+        asset_content_type: application/octet-stream 
