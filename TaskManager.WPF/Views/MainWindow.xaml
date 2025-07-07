@@ -157,9 +157,14 @@
                                                     Width="120">
                                 <DataGridComboBoxColumn.ElementStyle>
                                     <Style TargetType="ComboBox" BasedOn="{StaticResource MaterialDesignDataGridComboBox}">
-                                        <Setter Property="ItemsSource" Value="{Binding Source={x:Static models:TaskStatus.NotStarted}, Converter={StaticResource EnumToCollectionConverter}}"/>
+                                        <Setter Property="ItemsSource" Value="{Binding Source={x:Type models:TaskStatus}, Converter={StaticResource EnumToCollectionConverter}}"/>
                                     </Style>
                                 </DataGridComboBoxColumn.ElementStyle>
+                                <DataGridComboBoxColumn.EditingElementStyle>
+                                    <Style TargetType="ComboBox" BasedOn="{StaticResource MaterialDesignDataGridComboBox}">
+                                        <Setter Property="ItemsSource" Value="{Binding Source={x:Type models:TaskStatus}, Converter={StaticResource EnumToCollectionConverter}}"/>
+                                    </Style>
+                                </DataGridComboBoxColumn.EditingElementStyle>
                             </DataGridComboBoxColumn>
 
                             <DataGridComboBoxColumn Header="Priority" 
@@ -167,9 +172,14 @@
                                                     Width="100">
                                 <DataGridComboBoxColumn.ElementStyle>
                                     <Style TargetType="ComboBox" BasedOn="{StaticResource MaterialDesignDataGridComboBox}">
-                                        <Setter Property="ItemsSource" Value="{Binding Source={x:Static models:TaskPriority.Low}, Converter={StaticResource EnumToCollectionConverter}}"/>
+                                        <Setter Property="ItemsSource" Value="{Binding Source={x:Type models:TaskPriority}, Converter={StaticResource EnumToCollectionConverter}}"/>
                                     </Style>
                                 </DataGridComboBoxColumn.ElementStyle>
+                                <DataGridComboBoxColumn.EditingElementStyle>
+                                    <Style TargetType="ComboBox" BasedOn="{StaticResource MaterialDesignDataGridComboBox}">
+                                        <Setter Property="ItemsSource" Value="{Binding Source={x:Type models:TaskPriority}, Converter={StaticResource EnumToCollectionConverter}}"/>
+                                    </Style>
+                                </DataGridComboBoxColumn.EditingElementStyle>
                             </DataGridComboBoxColumn>
 
                             <DataGridTextColumn Header="Assigned To" 

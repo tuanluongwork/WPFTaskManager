@@ -12,7 +12,19 @@ namespace TaskManager.WPF.Converters
             if (value == null)
                 return null;
 
-            var enumType = value.GetType();
+            Type enumType;
+            
+            // Check if value is a Type (when using x:Type)
+            if (value is Type type)
+            {
+                enumType = type;
+            }
+            else
+            {
+                // Otherwise get the type of the enum instance
+                enumType = value.GetType();
+            }
+
             if (!enumType.IsEnum)
                 return null;
 
