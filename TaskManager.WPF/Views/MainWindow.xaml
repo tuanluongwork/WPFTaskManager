@@ -147,10 +147,21 @@
                               VirtualizingStackPanel.IsVirtualizing="True"
                               VirtualizingStackPanel.VirtualizationMode="Recycling">
                         <DataGrid.Columns>
-                            <DataGridTextColumn Header="Title" 
-                                                Binding="{Binding Title}" 
-                                                Width="2*"
-                                                EditingElementStyle="{StaticResource MaterialDesignDataGridTextColumnEditingStyle}"/>
+                            <DataGridTemplateColumn Header="Title" Width="2*">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Title}" VerticalAlignment="Center" Margin="8,0"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                                <DataGridTemplateColumn.CellEditingTemplate>
+                                    <DataTemplate>
+                                        <TextBox Text="{Binding Title, UpdateSourceTrigger=PropertyChanged}" 
+                                                 Style="{StaticResource MaterialDesignTextBox}"
+                                                 VerticalAlignment="Center"
+                                                 Margin="8,0"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellEditingTemplate>
+                            </DataGridTemplateColumn>
                             
                             <DataGridTemplateColumn Header="Status" Width="120">
                                 <DataGridTemplateColumn.CellTemplate>
@@ -184,10 +195,21 @@
                                 </DataGridTemplateColumn.CellEditingTemplate>
                             </DataGridTemplateColumn>
 
-                            <DataGridTextColumn Header="Assigned To" 
-                                                Binding="{Binding AssignedTo}" 
-                                                Width="150"
-                                                EditingElementStyle="{StaticResource MaterialDesignDataGridTextColumnEditingStyle}"/>
+                            <DataGridTemplateColumn Header="Assigned To" Width="150">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding AssignedTo}" VerticalAlignment="Center" Margin="8,0"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                                <DataGridTemplateColumn.CellEditingTemplate>
+                                    <DataTemplate>
+                                        <TextBox Text="{Binding AssignedTo, UpdateSourceTrigger=PropertyChanged}" 
+                                                 Style="{StaticResource MaterialDesignTextBox}"
+                                                 VerticalAlignment="Center"
+                                                 Margin="8,0"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellEditingTemplate>
+                            </DataGridTemplateColumn>
                             
                             <DataGridTemplateColumn Header="Due Date" Width="120">
                                 <DataGridTemplateColumn.CellTemplate>
